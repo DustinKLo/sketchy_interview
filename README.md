@@ -398,3 +398,5 @@ ORDER BY 1 ASC
 ```
 
 ![subs_vs_free_trials](output/subs_vs_free_trials.png)
+
+##### **Check the `output/` folder for the generated reports in CSV format**
