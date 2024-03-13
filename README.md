@@ -107,7 +107,75 @@ CREATE INDEX subscriptions_transaction_type_idx ON subscriptions USING btree (tr
 \copy subscriptions FROM '/###/sketchy_interview/subscriptions_clean.csv' delimiter ',' CSV HEADER;
 ```
 
-# Generating the Materialized View
+# General Reports
+
+Aggregating by University and `program_year`
+
+```sql
+SELECT
+  u.university_id,
+  uv.name AS school,
+  CASE WHEN u.program_year IS NULL THEN 'N/A' ELSE u.program_year END AS program_year,
+  COUNT(*) AS subs
+FROM subscriptions s
+INNER JOIN users u ON s.user_id = u.id
+INNER JOIN university uv ON u.university_id = uv.id
+WHERE s.transaction_type = 'PAID'
+GROUP BY
+  uv.name,
+  u.university_id,
+  u.program_year
+ORDER BY 1,2,3
+
+-- university_id,school,program_year,subs
+-- 1,Alabama College of Osteopathic Medicine,FIRST_YEAR,20
+-- 1,Alabama College of Osteopathic Medicine,FOURTH_YEAR,68
+-- 1,Alabama College of Osteopathic Medicine,OTHER,2
+-- 1,Alabama College of Osteopathic Medicine,POST_GRAD,12
+-- 1,Alabama College of Osteopathic Medicine,RESEARCH_YEAR,6
+-- 1,Alabama College of Osteopathic Medicine,SECOND_YEAR,51
+-- 1,Alabama College of Osteopathic Medicine,THIRD_YEAR,115
+-- 2,Arkansas College of Osteopathic Medicine,FIRST_YEAR,13
+-- 2,Arkansas College of Osteopathic Medicine,FOURTH_YEAR,65
+-- .
+-- .
+-- .
+```
+
+Aggregating by `program_year` only:
+
+- 3rd year medical students subscribe the most, followed by 4th and 2nd years
+
+```sql
+SELECT
+  u.program_year,
+  COUNT(*) AS subs
+FROM subscriptions s
+INNER JOIN users u ON s.user_id = u.id
+INNER JOIN university uv ON u.university_id = uv.id
+WHERE s.transaction_type = 'PAID'
+GROUP BY
+  u.program_year
+ORDER BY 2 DESC;
+
+--  program_year  | subs
+-- ---------------+-------
+--  THIRD_YEAR    | 21837
+--  FOURTH_YEAR   | 20817
+--  SECOND_YEAR   | 14790
+--  POST_GRAD     |  7101
+--  FIRST_YEAR    |  6986
+--  OTHER         |  3522
+--                |  2758
+--  RESEARCH_YEAR |  1118
+-- (8 rows)
+```
+
+# More Detailed Reports
+
+We can take this further and break it down by subscribers by year/month
+
+## Generating the Materialized View
 
 Materialized Views are best for when you need to create a "snapshot" of a large query of data.
 The main advantage of Materialized Views is that you can **create b-tree indexes** on the output b/c they are written to disk
@@ -203,6 +271,7 @@ Join the `subscription` table against the year/month series by this clause:
 # Output
 
 Now we can get the total number of subscribers for each year/month since inception
+
 When testing against March 2023 we get 24,125 total subs and after validating it matches
 
 ```sql
