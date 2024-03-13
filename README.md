@@ -171,6 +171,23 @@ ORDER BY 2 DESC;
 -- (8 rows)
 ```
 
+Aggregating by university, order by number of paid subs `DESC`
+
+```sql
+SELECT
+  u.university_id,
+  uv.name AS school,
+  COUNT(*) AS subs
+FROM subscriptions s
+INNER JOIN users u ON s.user_id = u.id
+INNER JOIN university uv ON u.university_id = uv.id
+WHERE s.transaction_type = 'PAID'
+GROUP BY
+  uv.name,
+  u.university_id
+ORDER BY subs DESC
+```
+
 # More Detailed Reports
 
 We can take this further and break it down by subscribers by year/month
