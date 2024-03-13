@@ -1,8 +1,8 @@
 subscriptions.csv
-# subscriptions_clean.csv
+subscriptions_clean.csv
 universities.csv
 users.csv
-# users_clean.csv
+users_clean.csv
 
 # General
 .DS_Store
