@@ -215,6 +215,7 @@ WITH year_month AS (
     s.id AS subscription_id,
     s.user_id,
     u.university_id,
+    u.program_year,
     s.term_start,
     s.term_end,
     s.transaction_type,
@@ -229,16 +230,18 @@ WITH year_month AS (
 )
 SELECT
   university_id,
+  program_year,
   transaction_type,
   month,
   COUNT(*) AS subs
 FROM user_subscription_by_month
-GROUP BY university_id, transaction_type, month
+GROUP BY university_id, program_year, transaction_type, month
 ORDER BY university_id, month ASC
 
 WITH DATA;
 
 CREATE INDEX subscription_by_month_university_idx ON subscription_by_month USING btree (university_id);
+CREATE INDEX subscription_by_month_program_year ON subscription_by_month USING btree (program_year);
 CREATE INDEX subscription_by_month_transaction_idx ON subscription_by_month USING btree (transaction_type);
 CREATE INDEX subscription_by_month_idx ON subscription_by_month USING btree (month);
 
