@@ -37,7 +37,7 @@ def subs_over_time():
         where = ""
     sql = f"""
     SELECT
-        MONTH::date::text, 
+        MONTH::date::text AS date, 
         SUM(subs)::int AS total
     FROM subscription_by_month
     {where}
@@ -81,7 +81,32 @@ def total_subs():
     rows = cur.fetchone()
     cur.close()
     print(rows)
-    return jsonify(rows[0])
+    return jsonify({
+        "total": rows[0]
+    })
 
+
+@app.route("/api/universities", methods=["GET"])
+def get_universities():
+    q = request.args.get('q', "")
+    if not q:
+        return jsonify([])
+
+    where = ""
+    if len(q) > 0:
+        where = f"WHERE name ILIKE '%{q}%'"
+    sql = f"""
+    SELECT id AS value, name AS label
+    FROM university 
+    {where}
+    ORDER BY name ASC
+    """
+    cur = conn.cursor()
+    cur.execute(sql)
+    colnames = [desc[0] for desc in cur.description]
+    rows = cur.fetchall()
+    rows = [dict(zip(colnames, row)) for row in rows]
+    cur.close()
+    return jsonify(rows)
 
 app.run(debug=True)

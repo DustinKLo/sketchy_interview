@@ -5,7 +5,6 @@ users.csv
 users_clean.csv
 
 sketchy-env/
-package-lock.json
 
 # General
 .DS_Store
